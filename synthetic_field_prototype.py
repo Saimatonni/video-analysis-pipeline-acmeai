@@ -6,6 +6,7 @@ from app.config import (
     FieldDetectorConfig,
     PipelineConfig,
 )
+from app.detector import FieldDetector, SyntheticFieldDetector
 
 
 CONFIG = PipelineConfig(
@@ -29,8 +30,8 @@ def run_pipeline():
     # Helper to generate input file if it doesn't exist locally
     # generate_synthetic_video(CONFIG["video_path"])
     generate_synthetic_video(CONFIG.video_path)
-
-    analyzer = FieldBoundaryAnalyzer(CONFIG)
+    detector = SyntheticFieldDetector(CONFIG.field_detector.min_area)
+    analyzer = FieldBoundaryAnalyzer(CONFIG, detector)
     # results = analyzer.process_video(CONFIG["video_path"])
     results = analyzer.process_video(CONFIG.video_path)
     print(f"Pipeline finished with {len(results) if results else 0} results.")

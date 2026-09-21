@@ -13,8 +13,10 @@ class FieldBoundaryAnalyzer:
     def __init__(
         self,
         config: PipelineConfig,
+        detector
     ):
         self.config = config
+        self.detector = detector
         self.sport = (
             config.field_detector.sport
         )
@@ -41,7 +43,8 @@ class FieldBoundaryAnalyzer:
             frame_count += 1
 
             mask = self._extract_mask(frame)
-            poly = self._derive_polygon_from_mask(mask)
+            # poly = self._derive_polygon_from_mask(mask)
+            poly = self.detector.detect(frame)
 
             if poly and poly.is_valid:
                 outer_boundary = Polygon([(0, 0), (1280, 0), (1280, 720), (0, 720)])
