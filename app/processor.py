@@ -41,7 +41,9 @@ class FieldBoundaryAnalyzer:
 
 
         frame_count = 0
-        detected_polygons = []
+        invalid_detections = 0
+        detections = []
+        # detected_polygons = []
 
         while True:
             ret, frame = cap.read()
@@ -54,16 +56,32 @@ class FieldBoundaryAnalyzer:
 
             # mask = self._extract_mask(frame)
             # poly = self._derive_polygon_from_mask(mask)
-            poly = self.detector.detect(frame)
+            detection = self.detector.detect(frame,frame_count,)
 
-            if poly and poly.is_valid:
-                outer_boundary = Polygon([(0, 0), (1280, 0), (1280, 720), (0, 720)])
-                intersection_area = poly.intersection(outer_boundary).area
-                detected_polygons.append((frame_count, poly, intersection_area))
+            if detection is None:
+              invalid_detections += 1
+              continue
+            detections.append(detection)
+            # poly = self.detector.detect(frame)
+
+            # if poly and poly.is_valid:
+            #     outer_boundary = Polygon([(0, 0), (1280, 0), (1280, 720), (0, 720)])
+            #     intersection_area = poly.intersection(outer_boundary).area
+            #     detected_polygons.append((frame_count, poly, intersection_area))
 
             # Simulate heavy per-frame processing latency
             # time.sleep(0.005)
 
         cap.release()
-        print(f"Processed {frame_count} frames. Found {len(detected_polygons)} boundaries.")
-        return detected_polygons
+        average_area = (sum(d.area for d in detections)
+          / len(detections)
+          if detections
+          else None
+        )
+        # print(f"Processed {frame_count} frames. Found {len(detected_polygons)} boundaries.")
+        # return detected_polygons
+        print(f"Processed {frame_count} frames.")
+        print(f"Valid detections: {len(detections)}")
+        print(f"Invalid detections: {invalid_detections}")
+        print(f"Average area: {average_area}")
+        return detections
