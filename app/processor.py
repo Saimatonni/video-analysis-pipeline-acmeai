@@ -4,20 +4,26 @@ import numpy as np
 from shapely.geometry import Polygon
 import logging
 from app.config import PipelineConfig
+import logging
+import uuid
+
+from app.models import (
+    JobEvent,
+    ProgressReport,
+)
+from app.reporter import Reporter
 
 logger = logging.getLogger(__name__)
 class FieldBoundaryAnalyzer:
-    # def __init__(self, config: dict):
-    #     self.config = config
-    #     self.sport = config.get("field_detector", {}).get("sport", "soccer")
-    #     self.threshold = config.get("confidence_threshold", 0.5)
     def __init__(
         self,
         config: PipelineConfig,
-        detector
+        detector,
+        reporter: Reporter,
     ):
         self.config = config
         self.detector = detector
+        self.reporter = reporter
         self.sport = (
             config.field_detector.sport
         )
@@ -26,12 +32,46 @@ class FieldBoundaryAnalyzer:
         )
 
     def process_video(self, video_path: str):
-        print(f"Starting processing for video: {video_path}")
+        # print(f"Starting processing for video: {video_path}")
+        run_id = str(uuid.uuid4())
+        logger.info("Starting processing: run_id=%s video=%s",run_id,video_path,)
+        # pipeline start
+        try:
+            self.reporter.report_event(
+                JobEvent(
+                    run_id=run_id,
+                    event="started",
+                    message="Pipeline started",
+                )
+            )
+        except Exception:
+            logger.exception(
+                "Failed to report pipeline start: run_id=%s",
+                run_id,
+            )
         
         cap = cv2.VideoCapture(video_path)
       
         if not cap.isOpened():
-            print("Error: Could not open video stream.")
+            logger.error(
+                "Could not open video stream: %s",
+                video_path,
+            )
+            try:
+                self.reporter.report_event(
+                    JobEvent(
+                        run_id=run_id,
+                        event="failed",
+                        message="Could not open video stream",
+                    )
+                )
+            except Exception:
+                logger.exception(
+                    "Failed to report pipeline failure: "
+                    "run_id=%s",
+                    run_id,
+                )
+
             return
         
         source_fps = cap.get(cv2.CAP_PROP_FPS)
@@ -69,15 +109,6 @@ class FieldBoundaryAnalyzer:
                 continue
 
             detections.append(detection)
-            # poly = self.detector.detect(frame)
-
-            # if poly and poly.is_valid:
-            #     outer_boundary = Polygon([(0, 0), (1280, 0), (1280, 720), (0, 720)])
-            #     intersection_area = poly.intersection(outer_boundary).area
-            #     detected_polygons.append((frame_count, poly, intersection_area))
-
-            # Simulate heavy per-frame processing latency
-            # time.sleep(0.005)
 
         cap.release()
         average_area = (sum(d.area for d in detections)
@@ -87,8 +118,24 @@ class FieldBoundaryAnalyzer:
         )
         # print(f"Processed {frame_count} frames. Found {len(detected_polygons)} boundaries.")
         # return detected_polygons
+        try:
+             self.reporter.report_event(
+                JobEvent(
+                    run_id=run_id,
+                    event="completed",
+                    message="Pipeline completed",
+                )
+            )
+
+        except Exception:
+            logger.exception(
+                "Failed to report pipeline completion: "
+                "run_id=%s",
+                run_id,
+            )
         print(f"Processed {frame_count} frames.")
         print(f"Valid detections: {len(detections)}")
         print(f"Invalid detections: {invalid_detections}")
         print(f"Average area: {average_area}")
+        
         return detections
