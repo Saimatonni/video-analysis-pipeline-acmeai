@@ -1,8 +1,9 @@
-"""Mock reporting service, standing in for the real platform API's job-reporting endpoints."""
-
+import logging
 from flask import Flask, jsonify, request
 
 app = Flask(__name__)
+
+logger = logging.getLogger(__name__)
 
 _events = []
 

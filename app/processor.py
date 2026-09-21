@@ -2,9 +2,10 @@ import time
 import cv2
 import numpy as np
 from shapely.geometry import Polygon
+import logging
 from app.config import PipelineConfig
 
-
+logger = logging.getLogger(__name__)
 class FieldBoundaryAnalyzer:
     # def __init__(self, config: dict):
     #     self.config = config
@@ -56,11 +57,17 @@ class FieldBoundaryAnalyzer:
 
             # mask = self._extract_mask(frame)
             # poly = self._derive_polygon_from_mask(mask)
-            detection = self.detector.detect(frame,frame_count,)
 
+            try:
+                detection = self.detector.detect(frame,frame_count,)
+            except Exception:
+               logger.exception("Detector failed at frame %d",frame_count,)
+               invalid_detections += 1
+               continue
             if detection is None:
-              invalid_detections += 1
-              continue
+                invalid_detections += 1
+                continue
+
             detections.append(detection)
             # poly = self.detector.detect(frame)
 
