@@ -11,7 +11,7 @@ from app.detector import FieldDetector, SyntheticFieldDetector
 
 CONFIG = PipelineConfig(
     video_path="synthetic_pitch_feed.mp4",
-    target_fps=30,
+    target_fps=5,
     confidence_threshold=0.5,
     field_detector=FieldDetectorConfig(
         type="sam_mask_v1",

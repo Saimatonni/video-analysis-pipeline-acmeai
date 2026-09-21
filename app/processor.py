@@ -26,11 +26,19 @@ class FieldBoundaryAnalyzer:
 
     def process_video(self, video_path: str):
         print(f"Starting processing for video: {video_path}")
+        
         cap = cv2.VideoCapture(video_path)
-
+      
         if not cap.isOpened():
             print("Error: Could not open video stream.")
             return
+        
+        source_fps = cap.get(cv2.CAP_PROP_FPS)
+        if source_fps <= 0:
+           raise RuntimeError("Unable to determine source FPS")
+        
+        sample_interval = max(1,round(source_fps / self.config.target_fps))
+
 
         frame_count = 0
         detected_polygons = []
@@ -41,8 +49,10 @@ class FieldBoundaryAnalyzer:
                 break
 
             frame_count += 1
+            if (frame_count - 1) % sample_interval != 0:
+              continue
 
-            mask = self._extract_mask(frame)
+            # mask = self._extract_mask(frame)
             # poly = self._derive_polygon_from_mask(mask)
             poly = self.detector.detect(frame)
 
@@ -52,29 +62,8 @@ class FieldBoundaryAnalyzer:
                 detected_polygons.append((frame_count, poly, intersection_area))
 
             # Simulate heavy per-frame processing latency
-            time.sleep(0.005)
+            # time.sleep(0.005)
 
         cap.release()
         print(f"Processed {frame_count} frames. Found {len(detected_polygons)} boundaries.")
         return detected_polygons
-
-    def _extract_mask(self, frame: np.ndarray) -> np.ndarray:
-        # Dummy mask generation based on green color thresholding
-        hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
-        lower_green = np.array([35, 40, 40])
-        upper_green = np.array([85, 255, 255])
-        return cv2.inRange(hsv, lower_green, upper_green)
-
-    def _derive_polygon_from_mask(self, mask: np.ndarray):
-        try:
-            contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-            if contours:
-                largest = max(contours, key=cv2.contourArea)
-                # if cv2.contourArea(largest) > self.config.get("field_detector", {}).get("min_area", 500):
-                if cv2.contourArea(largest) > self.config.field_detector.min_area:
-                    pts = largest.reshape(-1, 2)
-                    if len(pts) >= 3:
-                        return Polygon(pts)
-        except Exception:
-            pass
-        return None
