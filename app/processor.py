@@ -4,7 +4,6 @@ import numpy as np
 from shapely.geometry import Polygon
 import logging
 from app.config import PipelineConfig
-import logging
 import uuid
 
 from app.models import (

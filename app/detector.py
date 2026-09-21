@@ -26,10 +26,15 @@ class SyntheticFieldDetector(FieldDetector):
 
         hsv = cv2.cvtColor(frame,cv2.COLOR_BGR2HSV,)
 
-        lower_green = np.array([35, 40, 40])
-        upper_green = np.array([85, 255, 255])
+        lower_white = np.array([0, 0, 180])
+        upper_white = np.array([180, 80, 255])
 
-        mask = cv2.inRange(hsv,lower_green,upper_green,)
+        # mask = cv2.inRange(hsv,lower_green,upper_green,)
+        mask = cv2.inRange(
+            hsv,
+            lower_white,
+            upper_white,
+        )
 
         contours, _ = cv2.findContours(mask,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE,)
 

@@ -1,4 +1,4 @@
-
+import os
 from synthetic_generator import generate_synthetic_video
 from app.processor import FieldBoundaryAnalyzer
 from app.config import (
@@ -32,9 +32,10 @@ def run_pipeline():
     # generate_synthetic_video(CONFIG["video_path"])
     generate_synthetic_video(CONFIG.video_path)
     detector = SyntheticFieldDetector(CONFIG.field_detector.min_area)
-    reporter = Reporter(
-        base_url="http://localhost:4000",
-    )
+    # reporter = Reporter(
+    #     base_url="http://localhost:4000",
+    # )
+    reporter = Reporter(base_url=os.getenv("MOCK_API_URL","http://localhost:4000",),)
     analyzer = FieldBoundaryAnalyzer(CONFIG, detector, reporter)
     # results = analyzer.process_video(CONFIG["video_path"])
     results = analyzer.process_video(CONFIG.video_path)

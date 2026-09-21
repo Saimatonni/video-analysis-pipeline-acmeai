@@ -55,3 +55,8 @@ def generate_synthetic_video(
         writer.write(canvas)
 
     writer.release()
+
+if __name__ == "__main__":
+    generate_synthetic_video(
+        outputPath="data/synthetic_pitch_feed.mp4"
+    )
