@@ -1,11 +1,3 @@
-"""
-synthetic_generator.py
-
-Frame generator ported from the camera vendor's own SDK sample (calibration_demo.c) to
-produce a comparable synthetic feed for offline testing, kept close to the original so
-frame timing and encoding line up with their reference tool.
-"""
-
 import random
 
 import cv2
