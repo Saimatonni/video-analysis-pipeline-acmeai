@@ -35,7 +35,7 @@ def run_pipeline():
     # reporter = Reporter(
     #     base_url="http://localhost:4000",
     # )
-    reporter = Reporter(base_url=os.getenv("MOCK_API_URL","http://localhost:4000",),)
+    reporter = Reporter(base_url=os.getenv("MOCK_API_URL","http://localhost:5000",),)
     analyzer = FieldBoundaryAnalyzer(CONFIG, detector, reporter)
     # results = analyzer.process_video(CONFIG["video_path"])
     results = analyzer.process_video(CONFIG.video_path)

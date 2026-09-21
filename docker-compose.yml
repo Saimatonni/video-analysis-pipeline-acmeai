@@ -4,7 +4,7 @@ services:
     build:
       context: ./mock_api
     ports:
-      - "4000:4000"
+      - "5000:5000"
 
   runner:
     build:
@@ -12,6 +12,6 @@ services:
     depends_on:
       - mock_api
     environment:
-      MOCK_API_URL: http://mock_api:4000
+      MOCK_API_URL: http://mock_api:5000
       TARGET_FPS: "5"
       DEBUG_MODE: "false"
